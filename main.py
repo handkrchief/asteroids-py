@@ -7,13 +7,7 @@ from asteroidfield import AsteroidField
 from projectile import Projectile
 from constants import *
 
-
-def main():
-    pygame.init()
-    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
-    game_clock = pygame.time.Clock()
-    dt = 0
+def initialize_objects():
 
     updateable = pygame.sprite.Group()
     drawable = pygame.sprite.Group()
@@ -21,7 +15,7 @@ def main():
     Player.containers = (updateable, drawable)
     player = Player(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2)
 
-    GameStats.containers = (drawable)
+    GameStats.containers = (updateable ,drawable)
     game_stats = GameStats()
     
     asteroids = pygame.sprite.Group()
@@ -32,19 +26,45 @@ def main():
     projectiles = pygame.sprite.Group()
     Projectile.containers = (projectiles, updateable, drawable)
 
+    return {
+        "updateable": updateable,
+        "drawable": drawable,
+        "player": player,
+        "game_stats": game_stats,
+        "asteroids": asteroids,
+        "asteroid_field": asteroid_field,
+        "projectiles": projectiles
+    }
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+    game_clock = pygame.time.Clock()
+    dt = 0
+
+    objects = initialize_objects()
+    updateable = objects["updateable"]
+    drawable = objects["drawable"]
+    asteroids = objects["asteroids"]
+    player = objects["player"]
+    projectiles = objects["projectiles"]
+    game_stats = objects["game_stats"]
 
     while (True):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return
+        
         screen.fill("black")
         tick = game_clock.tick(60)
         dt = tick / 1000
         updateable.update(dt)
         for asteroid in asteroids:
             if asteroid.check_collision(player):
-                print("Game over!")
-                sys.exit()
+                game_stats.remove_life()
+                if game_stats.get_lives() <= 0:
+                    print("Game over!")
+                    sys.exit()
         for asteroid in asteroids:
             for projectile in projectiles:
                 if asteroid.check_collision(projectile):

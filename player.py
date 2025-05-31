@@ -46,10 +46,10 @@ class Player(CircleShape):
         if keys[pygame.K_SPACE]:
             self.shoot()
         
-        self.cooldown -= dt
+        self.cooldown = max(0, self.cooldown - dt)
     
     def shoot(self):
-        if self.cooldown <= 0:
+        if self.cooldown == 0:
             new_projectile = Projectile(self.position.x, self.position.y)
             new_projectile.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
             self.cooldown += PLAYER_SHOOT_COOLDOWN
