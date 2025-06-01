@@ -52,4 +52,8 @@ python main.py
 ## 📚 Credits & Attribution
 
 This game is based on a guided project from [BootDev](https://www.boot.dev/).  
-The original project structure and core logic were created as part of their instructional material.
+The project has been extended and customized by Ethan Moore, 2025, including:
+- Score tracking and lives system
+- Start and end screens
+- New weapon mechanics
+- Custom icon and UI polish

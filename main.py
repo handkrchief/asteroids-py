@@ -70,6 +70,8 @@ def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption("Asteroids")
+    icon = pygame.image.load('pixel_ship_red.png')
+    pygame.display.set_icon(icon)
     game_clock = pygame.time.Clock()
     game_state = "start"
     running = True
