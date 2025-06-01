@@ -1,20 +1,26 @@
 import pygame
-from constants import SCREEN_WIDTH, PLAYER_DAMAGE_COOLDOWN
+from constants import SCREEN_WIDTH, PLAYER_DAMAGE_COOLDOWN, PLAYER_MAX_LIVES
 
 
 class GameStats(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.score = 0
-        self.lives = 3
+        self.lives = PLAYER_MAX_LIVES
         self.damage_cooldown = 0
         self.font = pygame.font.SysFont(None, 36)
 
     def add_score(self, points):
         self.score += points
     
+    def get_score(self):
+        return self.score
+    
     def get_lives(self):
         return self.lives
+
+    def add_lives(self, lives):
+        self.lives = max(PLAYER_MAX_LIVES, self.lives + lives)
 
     def remove_life(self):
         if self.damage_cooldown == 0:

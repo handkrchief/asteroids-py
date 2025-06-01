@@ -1,14 +1,16 @@
 import pygame
 from circleshape import CircleShape
-from constants import PLAYER_RADIUS, PLAYER_SHOOT_COOLDOWN, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHOOT_SPEED
+from constants import PLAYER_RADIUS, PLAYER_SHOOT_COOLDOWN, PLAYER_BOMB_COOLDOWN, PLAYER_TURN_SPEED, PLAYER_SPEED, PLAYER_SHOOT_SPEED
 from projectile import Projectile
+from bombprojectile import BombProjectile
 
 class Player(CircleShape):
     
     def __init__(self ,x, y):
         super().__init__(x, y, PLAYER_RADIUS)
-        self.rotation = 0
-        self.cooldown = 0
+        self.rotation = 180
+        self.shot_cooldown = 0
+        self.bomb_cooldown = 0
 
     def triangle(self):
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
@@ -46,13 +48,21 @@ class Player(CircleShape):
         if keys[pygame.K_SPACE]:
             self.shoot()
         
-        self.cooldown = max(0, self.cooldown - dt)
+        if keys[pygame.K_b]:
+            self.shoot_bomb()
+
+        self.shot_cooldown = max(0, self.shot_cooldown - dt)
+        self.bomb_cooldown = max(0, self.bomb_cooldown - dt)
     
     def shoot(self):
-        if self.cooldown == 0:
+        if self.shot_cooldown == 0:
             new_projectile = Projectile(self.position.x, self.position.y)
             new_projectile.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
-            self.cooldown += PLAYER_SHOOT_COOLDOWN
+            self.shot_cooldown += PLAYER_SHOOT_COOLDOWN
         
-        
+    def shoot_bomb(self):
+        if self.bomb_cooldown == 0:
+            new_bomb = BombProjectile(self.position.x, self.position.y)
+            new_bomb.velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
+            self.bomb_cooldown += PLAYER_BOMB_COOLDOWN
     
