@@ -47,7 +47,8 @@ def initialize_objects():
 
     GameStats.containers = (updateable ,drawable)
     game_stats = GameStats()
-    
+    game_stats.add_lives(PLAYER_MAX_LIVES)
+
     asteroids = pygame.sprite.Group()
     Asteroid.containers = (asteroids, updateable, drawable)
     AsteroidField.containers = (updateable)
@@ -66,6 +67,35 @@ def initialize_objects():
         "projectiles": projectiles
     }
 
+def reinitialize_objects():
+    objects = initialize_objects()
+    return (
+        objects["updateable"],
+        objects["drawable"],
+        objects["asteroids"],
+        objects["player"],
+        objects["projectiles"],
+        objects["game_stats"],
+    )
+
+def handle_collisions(player, asteroids, projectiles, game_stats):
+    for asteroid in asteroids:
+        if asteroid.check_collision(player):
+            game_stats.remove_life()
+            if game_stats.get_lives() <= 0:
+                return STATE_END
+    for asteroid in asteroids:
+        for projectile in projectiles:
+            if asteroid.check_collision(projectile):
+                if isinstance(projectile, BombProjectile):
+                    projectile.explode(projectiles)
+                    projectile.kill()
+                else:
+                    asteroid.split()
+                    projectile.kill()
+                    game_stats.add_score(ASTEROID_SCORE_VALUE)
+    return STATE_GAME
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -73,61 +103,33 @@ def main():
     icon = pygame.image.load('pixel_ship_red.png')
     pygame.display.set_icon(icon)
     game_clock = pygame.time.Clock()
-    game_state = "start"
+    game_state = STATE_START
     running = True
     dt = 0
 
-    objects = initialize_objects()
-    updateable = objects["updateable"]
-    drawable = objects["drawable"]
-    asteroids = objects["asteroids"]
-    player = objects["player"]
-    projectiles = objects["projectiles"]
-    game_stats = objects["game_stats"]
+    updateable, drawable, asteroids, player, projectiles, game_stats = reinitialize_objects()
 
     while (running):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if game_state == "start":
+                if game_state == STATE_START:
                     if start_button_rect.collidepoint(event.pos):
-                        game_state = "game"
-                elif game_state == "end":
+                        game_state = STATE_GAME
+                elif game_state == STATE_END:
                     if restart_button_rect.collidepoint(event.pos):
-                        game_stats.add_lives(PLAYER_MAX_LIVES)
-                        objects = initialize_objects()
-                        updateable = objects["updateable"]
-                        drawable = objects["drawable"]
-                        asteroids = objects["asteroids"]
-                        player = objects["player"]
-                        projectiles = objects["projectiles"]
-                        game_stats = objects["game_stats"]
-                        game_state = "game"
-        if game_state == "start":
+                        updateable, drawable, asteroids, player, projectiles, game_stats = reinitialize_objects()
+                        game_state = STATE_GAME
+        if game_state == STATE_START:
             start_button_rect = draw_start_screen(screen)
-        elif game_state == "game":
+        elif game_state == STATE_GAME:
             screen.fill("black")
             updateable.update(dt)
-            for asteroid in asteroids:
-                if asteroid.check_collision(player):
-                    game_stats.remove_life()
-                    if game_stats.get_lives() <= 0:
-                        game_state = "end"
-                        break
-            for asteroid in asteroids:
-                for projectile in projectiles:
-                    if asteroid.check_collision(projectile):
-                        if isinstance(projectile, BombProjectile):
-                            projectile.explode(projectiles)
-                            projectile.kill()
-                        else:
-                            asteroid.split()
-                            projectile.kill()
-                            game_stats.add_score(ASTEROID_SCORE_VALUE) 
+            game_state = handle_collisions(player, asteroids, projectiles, game_stats)
             for object in drawable:
                 object.draw(screen)
-        elif game_state == "end":
+        elif game_state == STATE_END:
             restart_button_rect = draw_end_screen(screen, game_stats)
         tick = game_clock.tick(60)
         dt = tick / 1000    

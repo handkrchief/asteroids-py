@@ -6,7 +6,7 @@ class GameStats(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.score = 0
-        self.lives = PLAYER_MAX_LIVES
+        self.lives = 0
         self.damage_cooldown = 0
         self.font = pygame.font.SysFont(None, 36)
 
